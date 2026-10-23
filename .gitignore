@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+.pytest_cache/
+.mypy_cache/
+.venv/
+.env
+
+.venv-evidence/
+
+artifacts/
+
+# Private recipient SSH material
+secrets/
+*.key
+*.pem
+
+.env.*
+!.env.example
+backups/

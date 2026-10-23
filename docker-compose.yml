@@ -1,0 +1,52 @@
+x-common: &common
+  build: .
+  env_file: .env
+  environment:
+    DATABASE_URL: sqlite+aiosqlite:////app/data/goals.db
+    OPENROUTER_PROXY_URL: socks5h://tunnel:1080
+    TELEGRAM_PROXY_URL: socks5://tunnel:1080
+  volumes:
+    - goals-data:/app/data
+    - ./backups:/app/backups
+services:
+  tunnel:
+    build: ./tunnel
+    restart: unless-stopped
+    volumes:
+      - ./secrets/recipient_ed25519:/keys/recipient_ed25519:ro
+      - ./tunnel/known_hosts:/config/known_hosts:ro
+    tmpfs:
+      - /run/ssh:mode=0700
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "--max-time", "15", "--socks5-hostname", "127.0.0.1:1080", "https://openrouter.ai/api/v1/models"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 10s
+  init:
+    <<: *common
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+  api:
+    <<: *common
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      tunnel:
+        condition: service_healthy
+    command: ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    restart: unless-stopped
+  bot:
+    <<: *common
+    profiles: ["telegram"]
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      tunnel:
+        condition: service_healthy
+    command: ["python", "-m", "app.main"]
+    restart: unless-stopped
+volumes:
+  goals-data:

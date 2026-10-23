@@ -1,0 +1,20 @@
+.env
+.env.*
+!.env.example
+.git
+.venv*
+__pycache__
+.pytest_cache
+*.db
+*.sqlite3
+data/
+research/
+*.log
+artifacts/
+
+# Private recipient SSH material
+secrets/
+*.key
+*.pem
+
+backups/
