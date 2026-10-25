@@ -24,6 +24,6 @@ async def cmd_start(message: Message, session: AsyncSession, state: FSMContext) 
     await session.commit()
 
     await message.answer(
-        "Привет! Я «Шаг к мечте». Помогу разбить цель на этапы и отслеживать прогресс. Начни с кнопки «➕ Новая цель».",
+        "Привет! Я «Шаг в мечту». Помогу разбить цель на этапы и отслеживать прогресс. Начни с кнопки «➕ Новая цель».",
         reply_markup=main_menu_keyboard(),
     )
